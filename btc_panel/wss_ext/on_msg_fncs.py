@@ -21,18 +21,17 @@ def okex_on_message(caller, msg):
         try:
             for trade in msg['data']:
 
-                tr = pd.Timestamp("now").replace(second = pd.Timestamp(trade[3]).second)
                 data.append ({
                     "tid" : int(trade[0]),
                     'price': float(trade[1]),
                     'volume': float(trade[2]) if trade[4] == 'bid' else - float(trade[2]),
-                    'time': tr
+                    'time': pd.to_datetime("now",utc=True)
                 })
 
             df = pd.DataFrame.from_records(data=data, index="time")
             caller.write(chnl, df)
             
-            return chnl, data
+            return chnl, df
         
         except Exception as e:
             print (e)
@@ -57,17 +56,20 @@ def binance_on_message(caller, msg):
     msg = json.loads(msg)
     try:
         chnl = msg["stream"]
+        trade = msg["data"]
         df = pd.DataFrame.from_records(
             data=[{
-                "tid": int(msg["t"]),
-                "price" : float(msg['p']),
-                "volume" : float(msg['q']) if msg['m'] else -float(msg['q']),
-                'time':pd.to_datetime(msg['T'], utc=True, unit='ms')
+                "tid": int(trade["t"]),
+                "price" : float(trade['p']),
+                "volume" : float(trade['q']) if trade['m'] else -float(trade['q']),
+                'time':pd.to_datetime(trade['T'], utc=True, unit='ms')
             }],
             index="time"
         )
+        
         caller.write(chnl, df)
-        return chnl, data
+
+        return chnl, df
         
     except Exception as e:
         print (e)
@@ -161,7 +163,6 @@ def huobipro_on_message(caller, msg):
     msg = json.loads(gzip.decompress(msg).decode('utf-8'))
 
     if 'ping' in msg:
-        print (msg)
         caller.send(json.dumps({'pong' : msg['ping']}))
     elif 'ch' in msg:
         chnl = msg["ch"][7:10]
@@ -169,17 +170,18 @@ def huobipro_on_message(caller, msg):
         data = []
         for trade in msg['tick']['data']:
             data.append({
-                'id' : int(trade['id']),
+                'tid' : int(str(trade['id'])[-8:]),
                 'price': float(trade['price'])
             ,   'volume': float(trade['amount']) if trade['direction'] == 'buy' else -float(trade['amount'])
-            ,   'time': pd.to_datetime(trade['ts'], utc=True, unit='ms')
+            ,   "time":pd.to_datetime("now",utc=True)
+#             ,   'time': pd.to_datetime(trade['ts'], utc=True, unit='ms')
             })
         
         df = pd.DataFrame.from_records(
             data=data,
             index="time"
         )
-        
+
         caller.write(chnl, df)
         
         return chnl, df

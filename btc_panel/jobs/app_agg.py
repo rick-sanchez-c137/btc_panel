@@ -1,6 +1,6 @@
 from btc_panel import db_utils, _utils, _types
 from btc_panel.config import *
-from btc_panel.algo import df
+from btc_panel.algo import compress
 from btc_panel.ccxt_ext import helper
 from btc_panel.jobs import aggregation, compressor
 

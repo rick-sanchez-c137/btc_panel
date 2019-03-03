@@ -1,8 +1,8 @@
-from btc_panel.config import *
 from btc_panel import db_utils, _utils, _types
 
 import websocket
 import json
+import time
 
 
 class wssStreamer(websocket.WebSocketApp):
@@ -26,14 +26,13 @@ class wssStreamer(websocket.WebSocketApp):
 
     def write(self, chnl, df):
         if self.data_dst and self._config["channel_symbol"][chnl]:
-#             print (self._config["channel_symbol"][chnl])
             self.data_dst.append(self._config["channel_symbol"][chnl], df)
  
 
     def start(self):
         while True:
             if not self.sock or not self.connected:
-                self.run_forever(ping_interval=self._config)
+                self.run_forever(ping_interval=self._config["ping_interval"])
             time.sleep(0.1)
             self._logger.info(self._config["exchange_id"] + "connection dropped, reconnecting")
         
@@ -42,7 +41,6 @@ class wssStreamer(websocket.WebSocketApp):
         if self._config["on_open_payload"]:
             for each in self._config["on_open_payload"]:
                 self.send(json.dumps(each))
-#             print ("dump")
         self._logger.info(self._config["exchange_id"] + " opened ")
         
 

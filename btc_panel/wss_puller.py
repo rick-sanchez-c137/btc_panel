@@ -1,15 +1,34 @@
-from btc_panel.wss_ext import mybinance, mybitfinex2, mycoinbasepro, myhuobipro, myokex
+import sys
+sys.path.append(".")
 
-g_streamers = []
-g_streamers.append(mybinance.mybinance(thread_id=1))
-g_streamers.append(mybitfinex2.mybitfinex2(thread_id=2))
-g_streamers.append(mycoinbasepro.mycoinbasepro(thread_id=3))
-g_streamers.append(myhuobipro.myhuobipro(thread_id=4))
-g_streamers.append(myokex.myokex(thread_id=5))
+from btc_panel.wss_ext import on_msg_fncs
+from btc_panel.core import wssStreamer
+from btc_panel import wss_config
 
+import threading
+
+
+class twrap(threading.Thread):
+    def __init__(self, thread_id, ex_name):
+        threading.Thread.__init__(self)
+        self._imp = wssStreamer.wssStreamer(
+            config=wss_config.config[ex_name],
+            on_message_fnc=getattr(on_msg_fncs, ex_name+"_on_message")
+        )
+    
+    def run(self):
+        self._imp.start()
+
+# threads = []
+# th_id = 1
+# for each in wss_config.config:
+# #     print (each, getattr(on_msg_fncs, each+"_on_message"))
+#     threads.append( twrap(th_id, each) )
+#     th_id += 1
+thrd = twrap(1, "binance")
 try:
-    for e in g_streamers:
-        e.start()
+#     for thrd in threads:
+    thrd.start()
 except KeyboardInterrupt:
     sys.exit(0)
 finally:
