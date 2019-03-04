@@ -5,11 +5,13 @@ from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from pytz import utc
 
 from btc_panel.config import *
-from btc_panel import db_utils, _utils, _types
+from btc_panel import db_utils, _utils, _types, wss_config
 from btc_panel.jobs import aggregation, app_agg, bitmex
-from btc_panel.algo import df
-from btc_panel.dash_ext import pie
+from btc_panel.algo import compress
+from btc_panel.core import wssStreamer
+from btc_panel.dash_ext import pie, scatter
 from btc_panel.ccxt_ext import helper
+from btc_panel.wss_ext import on_msg_fncs
 
 from pymongo import MongoClient
 import pandas as pd
@@ -25,8 +27,7 @@ client.list_database_names()
 A = Arctic(client)
 
 jobstores = {
-    'mongo' : MongoDBJobStore(client=client),
-    'default': SQLAlchemyJobStore(url='sqlite:///'+JOB_PATH)
+    'mongo' : MongoDBJobStore(client=client)
 }
 executors = {
     'default': ThreadPoolExecutor(20),

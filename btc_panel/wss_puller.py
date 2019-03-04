@@ -7,7 +7,6 @@ from btc_panel import wss_config
 
 import threading
 
-
 class twrap(threading.Thread):
     def __init__(self, thread_id, ex_name):
         threading.Thread.__init__(self)
@@ -19,17 +18,19 @@ class twrap(threading.Thread):
     def run(self):
         self._imp.start()
 
-# threads = []
-# th_id = 1
-# for each in wss_config.config:
-# #     print (each, getattr(on_msg_fncs, each+"_on_message"))
-#     threads.append( twrap(th_id, each) )
-#     th_id += 1
-thrd = twrap(1, "binance")
+threads = []
+th_id = 1
+for each in wss_config.config:
+#     print (each, getattr(on_msg_fncs, each+"_on_message"))
+    threads.append( twrap(th_id, each) )
+    th_id += 1
+
 try:
-#     for thrd in threads:
-    thrd.start()
+    for thrd in threads:
+        thrd.start()
 except KeyboardInterrupt:
     sys.exit(0)
 finally:
+    for thrd in threads:
+        thrd.join()
     print (__file__, "closed")

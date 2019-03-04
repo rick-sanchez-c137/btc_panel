@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def compress_df(parsed_df:'parsed DataFrame from parser',
+def aggregate_raw(parsed_df:'parsed DataFrame from parser',
                 pprice:'previous close price'=-1,
                 resolution:'compress resolution (str)'='1min'):
     """
@@ -97,12 +97,12 @@ def compress_df(parsed_df:'parsed DataFrame from parser',
         grp_p = v.groupby(pd.cut(v['price'], steps, right=False))
 
         # compress data in
-        for t, v in grp_p:
-            if t.right > _high:
+        for tt, vv in grp_p:
+            if tt.right > _high:
                 break
-            idx = 16+int((t.right - np.floor(_low))/delta)
-            _bin.iloc[idx] = v[v['volume'] < 0]['volume'].sum()
-            _bin.iloc[idx+120] = v[v['volume'] > 0]['volume'].sum()
+            idx = 16+int((tt.right - np.floor(_low))/delta)
+            _bin.iloc[idx] = vv[vv['volume'] < 0]['volume'].sum()
+            _bin.iloc[idx+120] = vv[vv['volume'] > 0]['volume'].sum()
 
         # inc
         bin_index += 1
