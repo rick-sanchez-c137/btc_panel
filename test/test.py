@@ -1,20 +1,12 @@
-from btc_panel.config import *
-from btc_panel import db_utils, puller_blocks, _utils, _types
-from btc_panel.jobs import compressor, aggregation
-from btc_panel.ccxt_ext import helper
+from btc_panel.utils import mongo
 
-from pymongo import MongoClient
 import pandas as pd
-import urllib
-import requests
 import asyncio
 import random
 import time
 
 
 from arctic.date import CLOSED_OPEN, DateRange
-from arctic import TICK_STORE, VERSION_STORE, CHUNK_STORE, Arctic
-
 
 
 async def get_vol_prof(ex_name:"exchange name: str",
@@ -23,7 +15,7 @@ async def get_vol_prof(ex_name:"exchange name: str",
     # get cache time range
     src_res = "5min"
     sym = ex_name+"/XBTUSD"
-    src = db_utils.get_mongo_lib(src_res)
+    src = mongo._get_lib(src_res)
     rng = DateRange(start=start, end=end, interval=CLOSED_OPEN)
     df1 = await src.read(sym, date_range=rng).data
 
@@ -36,7 +28,7 @@ async def get_vol_prof(ex_name:"exchange name: str",
     
     if cache_end < end:
         rng = DateRange(start=cache_end, end=end, interval=CLOSED_OPEN)
-        src = db_utils.get_mongo_lib("1min")
+        src = mongo._get_lib("1min")
         df2 = src.read(sym, date_range=rng).data
         df1 = pd.concat([df1, df2])
         

@@ -1,12 +1,11 @@
-from btc_panel.config import *
-from btc_panel import db_utils, _utils, _types
+from btc_panel.utils import mongo
 
 import pandas as pd
 import ccxt
-from arctic import TICK_STORE, VERSION_STORE, CHUNK_STORE, Arctic
+from arctic import TICK_STORE
 
 client = ccxt.bitmex()
-lib = db_utils.get_mongo_lib("bitmex", lib_type=TICK_STORE)
+lib = mongo._get_lib("bitmex", lib_type=TICK_STORE)
 
 def fetchOpenInterest(oi_symbols):
     global client, lib

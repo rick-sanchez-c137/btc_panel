@@ -5,14 +5,14 @@ import requests
 import time
 import datetime
 
-from btc_panel import _utils, _types
+from btc_panel.utils import general, types
 from btc_panel.config import * # import global vars
 
 from sqlalchemy import Column, Integer, Float, String, DateTime, MetaData, Table
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 
-logger = _utils.create_logger(__file__)
+logger = general.create_logger(__file__)
 
 
 def delete_rows_after(id:'id (int)', engine:'connection engine'):
@@ -34,7 +34,7 @@ def delete_rows_after(id:'id (int)', engine:'connection engine'):
     res = conn.execute(del_st)
     
     
-@_utils.exception(logger)
+@general.exception(logger)
 def download_block_data(start:'start time', end:'end time', engine:'sql engine'):
 
     print ("start download from", start, "to", end)
@@ -55,7 +55,7 @@ def download_block_data(start:'start time', end:'end time', engine:'sql engine')
 
         # type guard
         for k in df.columns:
-            df[k] = df[k].astype(_types.type_dict[k])
+            df[k] = df[k].astype(types.type_dict[k])
 
         # check overlap
         df = df[df.index <= end]
@@ -72,8 +72,8 @@ def download_block_data(start:'start time', end:'end time', engine:'sql engine')
         df.to_sql('blocks', con=engine, if_exists='append')
 
 
-@_utils.exception(logger)
-@_utils._validate_timeinput
+@general.exception(logger)
+@general.time_enforce
 def update_db_data(start:'start time', 
                 end:'end time'=None, 
                 engine:'sql engine'=None, 

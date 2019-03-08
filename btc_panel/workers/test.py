@@ -1,16 +1,15 @@
-from btc_panel import db_utils, _utils, _types
+from btc_panel.utils import general, mongo
 from btc_panel.config import *
 from btc_panel.algo import compress
-from btc_panel.ccxt_ext import helper
+from btc_panel.ext_ccxt import helper
 
 import pandas as pd
-import asyncio
 
 from arctic.date import CLOSED_OPEN, DateRange
 
 
 def mongo_buffer(delete_raw=False):
-    logger = _utils.create_logger("mongo_buffer")
+    logger = general.create_logger("mongo_buffer")
     end = pd.Timestamp("now").floor("1min")
     start = end - pd.Timedelta("1min")
     rng = DateRange(start, end, CLOSED_OPEN)
@@ -22,7 +21,7 @@ def mongo_buffer(delete_raw=False):
         bins = []
         try:
             libname = each + "/trades"
-            lib = db_utils.get_mongo_lib(libname)
+            lib = mongo._get_lib(libname)
             sym = 'btc/usdt'
             if each == "coinbasepro":
                 sym = 'btc/usd'
@@ -39,10 +38,10 @@ def mongo_buffer(delete_raw=False):
 
             # save compressed
             db_sym = each+"/XBTUSD"
-            db_utils.get_mongo_lib("1min").append(db_sym, bins)
+            mongo._get_lib("1min").append(db_sym, bins)
             # delete raw
             if delete_raw:
-                db_utils.delete_cache(each, db_utils.get_engine(TRADE_WSS_PATH), logger=logger, start=start, end=end)
+                mongo.delete_cache(each, mongo.get_engine(TRADE_WSS_PATH), logger=logger, start=start, end=end)
 
             logger.info(each + "trades converted at " + start.strftime("%Y-%m-%d %H:%M:00"))
 
