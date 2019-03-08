@@ -36,7 +36,7 @@ class wssStreamer(websocket.WebSocketApp):
             try:
                 # print (self._config["channel_symbol"][chnl], df)
                 # uncomment the line below to save data
-                self._data_dst.append(self._config["channel_symbol"][chnl], df, prune_previous_version=True)
+                self._data_dst.write(self._config["channel_symbol"][chnl], df, prune_previous_version=True)
             except Exception as e:
                 self._logger.warning(e)
 

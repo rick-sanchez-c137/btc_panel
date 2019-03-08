@@ -2,6 +2,7 @@ import asyncio
 import time
 
 import pandas as pd
+import arctic
 
 from btc_panel.ext_ccxt import config, helper
 from btc_panel.utils import general, mongo
@@ -20,10 +21,10 @@ class ccxtStreamer(object):
         self._logger = general.create_logger(self._exchange_id + "_" + self._resolution)
 
         # REST call interval, in second
-        self._pull_interval = 5
+        self._pull_interval = 10
         self._running = False
 
-        # self.init_meta()
+        self.init_meta()
 
     @property
     def pull_interval(self):
@@ -55,11 +56,11 @@ class ccxtStreamer(object):
         df = df[df.index >= left]
         # get open right boundary
         df = df[df.index < right]
-        # print(dst_sym, ">>>>>>>>>>>", left, len(df), right)
+        print(dst_sym, ">>>>>>>>>>>", left, len(df), right)
 
         if df.empty:
             return
-        self._data_dst.append(dst_sym, df, prune_previous_version=False)
+        self._data_dst.append(dst_sym, df, prune_previous_version=True)
         self._update_meta(loc_sym)
 
     def _update_meta(self, loc_sym):
@@ -75,29 +76,25 @@ class ccxtStreamer(object):
             "price": df["price"].iloc[-1],
             "volume": df["volume"].iloc[-1]
         }
-
         self._data_dst.write_metadata(dst_symbol, meta)
 
     def init_meta(self):
         # initialize a dummy meta if no data
+        meta = dict()
+        meta["last-trade"] = {
+            "datetime": pd.Timestamp("now", tz="GMT0"),
+            "tid": -1,
+            "price": -1.0,
+            "volume": 0.0
+        }
         for loc_sym in config.SYMBOL_LOC2EX[self._exchange_id]:
-            meta = dict()
-            meta["last-trade"] = {
-                "datetime": pd.Timestamp("now"),
-                "tid": -1,
-                "price": -1.0,
-                "volume": 0.0
-            }
-            dst_symbol = mongo.db_symbol(self._exchange_id, loc_sym)
-            if not self._data_dst.has_symbol(dst_symbol):
+            try:
+                dst_symbol = mongo.db_symbol(self._exchange_id, loc_sym)
+                self._update_meta(dst_symbol)
+            except arctic.exceptions.NoDataFoundException:
                 self._data_dst.write_metadata(dst_symbol, meta)
-                return
-            nrow = self._data_dst.get_info(dst_symbol)["rows"]
-            if nrow == 0:
-                self._data_dst.write_metadata(dst_symbol, meta)
-                return
-
-            self._update_meta(loc_sym)
+            except Exception as e:
+                self._logger.warning(e)
 
     async def _worker(self, client, queue):
         while True:
@@ -129,7 +126,10 @@ class ccxtStreamer(object):
 
         # Wait until the queue is fully processed.
         started_at = time.monotonic()
-        await queue.join()
+        try:
+            await asyncio.wait_for(queue.join(), timeout=3)
+        except asyncio.TimeoutError:
+            self._logger.warning(self._exchange_id + " REST Pull Time Out")
         total_slept_for = time.monotonic() - started_at
 
         # clean up

@@ -3,7 +3,11 @@ JOB_PATH = "/home/mortysmith_89/git/btc_panel/data/workers.sqlite"
 TRADE_WSS_PATH = "/home/mortysmith_89/git/btc_panel/data/wss_trades.sqlite"
 XBT_CSV_PATH = "/home/mortysmith_89/git/btc_panel/data/xbt/"
 
-MONGO_HOST = "35.231.212.206"
+MONGO_USER = "lokke"
+MONGO_PWD = "teamkotrt"
+MONGO_AUTHDB = "admin"
+MONGO_HOST = "34.73.116.153"
+MONGO_PORT = 27017
 
 OB_EX = ['bitfinex', 'coinbase']
 TRADE_EX = ['binance', 'bitfinex2', "coinbasepro", "okex", "huobipro"]
