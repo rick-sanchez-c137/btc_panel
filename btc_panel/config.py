@@ -3,11 +3,11 @@ JOB_PATH = "/home/mortysmith_89/git/btc_panel/data/workers.sqlite"
 TRADE_WSS_PATH = "/home/mortysmith_89/git/btc_panel/data/wss_trades.sqlite"
 XBT_CSV_PATH = "/home/mortysmith_89/git/btc_panel/data/xbt/"
 
-MONGO_USER = "lokke"
-MONGO_PWD = "teamkotrt"
+MONGO_USER = 
+MONGO_PWD = 
 MONGO_AUTHDB = "admin"
-MONGO_HOST = "34.73.116.153"
-MONGO_PORT = 27017
+MONGO_HOST = 
+MONGO_PORT = 
 
 OB_EX = ['bitfinex', 'coinbase']
 TRADE_EX = ['binance', 'bitfinex2', "coinbasepro", "okex", "huobipro"]
@@ -146,7 +146,7 @@ SUPPORTED_RESOLUTION = ["1min", "5min", "15min", "1H", "4H", "1D"]
 
 import plotly
 
-plotly.tools.set_credentials_file(username='team.kotrt', api_key='AW9XPHmvSb2PadnwYxQZ')
+plotly.tools.set_credentials_file(username='', api_key='')
 
 
 
